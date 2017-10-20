@@ -3,6 +3,13 @@ utility:
   js:
     js/utility.js: {}
 
+product_list:
+  version: VERSION
+  dependencies:
+    - commerce_enchanced_ecommerce/utility
+  js:
+    js/productList.js: {}
+
 product_details:
   version: VERSION
   dependencies:
@@ -23,6 +30,11 @@ remove_from_cart:
     - commerce_enchanced_ecommerce/utility
   js:
     js/removeFromCart.js: {}
+
+checkout:
+  version: VERSION
+  js:
+    js/checkout.js: {}
 
 checkout_complete:
   version: VERSION

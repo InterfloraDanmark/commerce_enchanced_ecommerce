@@ -1,12 +1,14 @@
 <?php
 
-namespace Drupal\commerce_enchanced_ecommerce;
+namespace Drupal\commerce_enchanced_ecommerce\Model;
 
 use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_product\Entity\ProductVariationInterface;
 
 /**
  * Provides the completion message pane.
+ *
+ * @package Drupal\commerce_enchanced_ecommerce\Model
  */
 class EnchancedECommerceOrder {
 
@@ -38,8 +40,9 @@ class EnchancedECommerceOrder {
         $shipping = $adjustment->getAmount()->getNumber();
       }
     }
-    if (!empty($this->order->get('shipments'))) {
-      $shipments = $this->order->get('shipments');
+    $orderItems = [];
+    if ($this->order->hasField('shipments') && !$this->order->get('shipments')->isEmpty()) {
+      $shipments = $this->order->get('shipments')->referencedEntities();
       /** @var \Drupal\commerce_shipping\Entity\Shipment $shipment */
       foreach ($shipments as $shipment) {
         $items = $shipment->getItems();
@@ -51,13 +54,12 @@ class EnchancedECommerceOrder {
             continue;
           }
           $enchanchedEcommerce = new EnchancedECommerceItem($orderItem, $shipmentItem);
-          $orderItems[] = $enchanchedEcommerce->getOrderItemDetails();
+          $orderItems[] = $enchanchedEcommerce->toExport();
         }
       }
     }
     else {
       $items = $this->order->getItems();
-      $orderItems = [];
       /** @var \Drupal\commerce_order\Entity\OrderItemInterface $orderItem */
       foreach ($items as $orderItem) {
         $purchased_entity = $orderItem->getPurchasedEntity();
@@ -65,9 +67,10 @@ class EnchancedECommerceOrder {
           continue;
         }
         $enchanchedEcommerce = new EnchancedECommerceItem($orderItem);
-        $orderItems[] = $enchanchedEcommerce->getOrderItemDetails();
+        $orderItems[] = $enchanchedEcommerce->toExport();
       }
     }
+    $payment = reset($payments);
     $paymentId = (!empty($payment->remote_id->value)) ? $payment->remote_id->value : $payment->id();
     $orderData = new \stdClass();
     $orderData->id = $paymentId;

@@ -1,6 +1,4 @@
 (function($) {
-
-    productVariant = '';
     Drupal.behaviors.ceeProductDetails = {
         attach: function(context, settings) {
             if (settings.stepId === 'complete') {
@@ -13,9 +11,9 @@
                         'event': 'checkoutComplete',
                         'ecommerce': {
                             'purchase': {
-                                actionField: details
-                            },
-                            'products': items
+                                'actionField': details,
+                                'products': items
+                            }
                         }
                     });
                 }

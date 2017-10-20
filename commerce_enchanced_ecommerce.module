@@ -7,8 +7,6 @@
 
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\commerce_enchanced_ecommerce\EnchancedECommerceProduct;
-use Drupal\commerce_enchanced_ecommerce\EnchancedECommerceOrder;
 
 /**
  * Implements hook_help().
@@ -34,12 +32,23 @@ function commerce_enchanced_ecommerce_preprocess_commerce_product(&$variables) {
   if ($elements['#view_mode'] == 'full') {
     /** @var \Drupal\commerce_product\Entity $product */
     $product = $elements["#commerce_product"];
-    $variant = $product->getDefaultVariation();
-    $enchanchedEcommerce = new EnchancedECommerceProduct($product, $variant);
-    $details = $enchanchedEcommerce->getProductDetails();
-
+    $details = \Drupal::service('commerce_enchanced_ecommerce.get_data')->getProductData($product);
     $variables['#attached']['library'][] = 'commerce_enchanced_ecommerce/product_details';
     $variables['#attached']['drupalSettings']['commerceEnchancedECommerce'] = $details;
+  }
+  if ($elements['#view_mode'] == 'teaser') {
+    /** @var \Drupal\commerce_product\Entity $product */
+    $product = $elements["#commerce_product"];
+    $variable = $product->getDefaultVariation();
+    $variables['attributes']['data-variation'] = $variable->getTitle();
+    $details = \Drupal::service('commerce_enchanced_ecommerce.get_data')->getProductData($product);
+    $variables['attributes']['data-sku'] = $details->id;
+    if ($product->hasField('field_category') && !$product->field_category->isEmpty() && !is_null($product->field_category->entity)) {
+      $variables['attributes']['data-category'] = $product->field_category->entity->getName();
+    }
+    if ($product->hasField('field_brand') && !$product->field_brand->isEmpty() && !is_null($product->field_brand->entity)) {
+      $variables['attributes']['data-brand'] = $product->field_brand->entity->getName();
+    }
   }
 }
 
@@ -51,12 +60,7 @@ function commerce_enchanced_ecommerce_form_alter(&$form, FormStateInterface &$fo
     $form['#attached']['library'][] = 'commerce_enchanced_ecommerce/add_to_cart';
     /** @var \Drupal\commerce_order\Entity\OrderItemInterface $orderItem */
     $orderItem = $form_state->getFormObject()->getEntity();
-    /** @var \Drupal\commerce_product\Entity\ProductVariationInterface $purchased_entity */
-    $purchased_entity = $orderItem->getPurchasedEntity();
-    /** @var \Drupal\commerce_product\Entity\ProductInterface $purchased_entity */
-    $product = $purchased_entity->getProduct();
-    $enchanchedEcommerce = new EnchancedECommerceProduct($product, $purchased_entity);
-    $details = $enchanchedEcommerce->getCartActionDetails();
+    $details = \Drupal::service('commerce_enchanced_ecommerce.get_data')->getCartProductData($orderItem);
     /** @var \Drupal\commerce_store\Entity\Store $store */
     $store = \Drupal::service('commerce_store.current_store')->getStore();
     $details->currencyCode = $store->getDefaultCurrencyCode();
@@ -81,12 +85,28 @@ function commerce_enchanced_ecommerce_form_alter(&$form, FormStateInterface &$fo
 //      $form['#attached']['drupalSettings']['ceeRemoveFromCart'] = $products;
 //    }
   }
-  if (strpos($form_id, 'commerce_checkout_flow') !== FALSE) {
-    if ($form['#step_id'] === 'complete') {
-      /** @var \Drupal\commerce_order\Entity\OrderInterface $order */
-      $order = $form_state->getFormObject()->getOrder();
-      $enchanchedEcommerce = new EnchancedECommerceOrder($order);
-      $enchanchedEcommerce->getOrderCompleteData($form);
+  if (strpos($form_id, 'commerce_checkout_flow') !== FALSE && $form_id !== 'commerce_checkout_flow_edit_form') {
+    /** @var \Drupal\commerce_order\Entity\OrderInterface $order */
+    $order = $form_state->getFormObject()->getOrder();
+    $stepId = $form['#step_id'];
+    if ($stepId === 'complete') {
+      \Drupal::service('commerce_enchanced_ecommerce.get_data')->getOrderComplete($order, $form);
+    }
+
+    $products = [];
+    foreach ($order->get('shipments') as $shipmentListItem) {
+      /** @var \Drupal\interflora_shipping\Entity\Shipment $shipment */
+      $shipment = $shipmentListItem->entity;
+      foreach ($shipment->getItems() as $shipmentItem) {
+        $products[] = \Drupal::service('commerce_enchanced_ecommerce.get_data')->getShipmentProduct($shipmentItem, $shipment);
+      }
+    }
+
+    $payload = \Drupal::service('commerce_enchanced_ecommerce.get_data')->getCheckoutStep($stepId, $products);
+    if ($payload->stepIdToNumber($stepId) !== FALSE) {
+      $form['#attached']['drupalSettings']['checkout'] = $payload;
+      $form['#attached']['drupalSettings']['stepId'] = $stepId;
+      $form['#attached']['library'][] = 'commerce_enchanced_ecommerce/checkout';
     }
   }
 }
