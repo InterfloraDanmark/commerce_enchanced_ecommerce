@@ -18,32 +18,50 @@ use Drupal\commerce_shipping\ShipmentItem;
  */
 class DataCollector implements DataCollectorInterface {
 
+  /**
+   * {@inheritdoc}
+   */
   public function getProductData(ProductInterface $product) {
     $variant = $product->getDefaultVariation();
     $enchanchedEcommerce = new EnchancedECommerceProduct($product, $variant);
     return $enchanchedEcommerce->toExport();
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getCartProductData(OrderItemInterface $orderItem) {
     /** @var \Drupal\commerce_product\Entity\ProductVariationInterface $purchased_entity */
     $purchased_entity = $orderItem->getPurchasedEntity();
-    /** @var \Drupal\commerce_product\Entity\ProductInterface $purchased_entity */
-    $product = $purchased_entity->getProduct();
-    $enchanchedEcommerce = new EnchancedECommerceCartProduct($product, $purchased_entity);
-    return $enchanchedEcommerce->toExport();
+    if ($purchased_entity !== NULL) {
+      /** @var \Drupal\commerce_product\Entity\ProductInterface $purchased_entity */
+      $product = $purchased_entity->getProduct();
+      $enchanchedEcommerce = new EnchancedECommerceCartProduct($product, $purchased_entity);
+      return $enchanchedEcommerce->toExport();
+    }
+    return [];
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getShipmentProduct(ShipmentItem $item, ShipmentInterface $shipment) {
     $shipmentProductInfo = new EnchancedECommerceShipmentProduct($item, $shipment);
     return $shipmentProductInfo->toExport();
   }
 
-  public function getOrderComplete(OrderInterface $order, &$form) {
+  /**
+   * {@inheritdoc}
+   */
+  public function getOrderComplete(OrderInterface $order, array &$form) {
     $enchanchedEcommerce = new EnchancedECommerceOrder($order);
     $enchanchedEcommerce->getOrderCompleteData($form);
   }
 
-  public function getCheckoutStep($stepId, $products) {
+  /**
+   * {@inheritdoc}
+   */
+  public function getCheckoutStep($stepId, array $products) {
     return new EnchancedECommerceCheckout($stepId, $products);
   }
 
