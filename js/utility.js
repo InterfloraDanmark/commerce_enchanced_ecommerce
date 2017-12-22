@@ -7,7 +7,7 @@
             var product = {
                     'name': $('.field--name-title', this).text(),
                     'id': $(this).attr('data-sku'),
-                    'price': $('.price--sum').attr('content'),
+                    'price': $('.price--sum', this).attr('content'),
                     'variant': $(this).attr('data-variation'),
                     'list': $('h1:first').text(),
                     'position': count
@@ -31,7 +31,7 @@
         var product = {
                 'name': $('.field--name-title', tgt).text(),
                 'id': $(tgt).attr('data-sku'),
-                'price': $('.price--sum').attr('content'),
+                'price': $('.price--sum', tgt).attr('content'),
                 'variant': $(tgt).attr('data-variation'),
                 'position': parseInt($(tgt).closest('li').index()) + 1
             },
