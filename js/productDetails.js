@@ -3,7 +3,7 @@
     productVariant = '';
     Drupal.behaviors.ceeProductDetails = {
         attach: function(context, settings) {
-            if ($('body.path-product', context).size() > 0) {
+            if ($('body.path-product', context).length > 0) {
                 var detailsObj = settings.commerceEnchancedECommerce,
                     details = $.getProductDetails(detailsObj);
                 productVariant = detailsObj.variant;

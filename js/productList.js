@@ -3,7 +3,7 @@
     productVariant = '';
     Drupal.behaviors.ceeProductDetails = {
         attach: function(context, settings) {
-            if ($('body', context).size()) {
+            if ($('body', context).length) {
                 window.dataLayer = window.dataLayer || {};
                 var listData = $.getListProducts(),
                     _data = {

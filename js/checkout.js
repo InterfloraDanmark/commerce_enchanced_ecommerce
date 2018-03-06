@@ -16,7 +16,7 @@
      */
     Drupal.behaviors.googleECommerce = {
         attach: function (context, settings) {
-            if ($('body', context).size()) {
+            if ($('body', context).length) {
                 window.dataLayer = window.dataLayer || [];
                 if (typeof settings.checkout !== 'undefined' ) {
                     dataLayer.push(settings.checkout);
