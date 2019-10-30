@@ -44,7 +44,9 @@ function commerce_enchanced_ecommerce_preprocess_commerce_product(&$variables) {
     $product = $elements["#commerce_product"];
     if ($product->hasVariations()) {
       $variable = $product->getDefaultVariation();
-      $variables['attributes']['data-variation'] = $variable->getTitle();
+      if ($variable) {
+        $variables['attributes']['data-variation'] = $variable->getTitle();
+      }
       $details = \Drupal::service('commerce_enchanced_ecommerce.get_data')
         ->getProductData($product);
       $variables['attributes']['data-sku'] = $details->id;
