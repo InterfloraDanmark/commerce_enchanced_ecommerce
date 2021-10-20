@@ -1,7 +1,7 @@
 name: Commerce enchanced ecommerce
 type: module
 description: Send data to google enchanced ecommerce.
-core: 8.x
+core_version_requirement: ^8 || ^9
 package: Commerce (contrib)
 dependencies:
   - commerce
