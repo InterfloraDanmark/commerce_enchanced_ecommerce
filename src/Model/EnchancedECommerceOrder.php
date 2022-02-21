@@ -71,9 +71,8 @@ class EnchancedECommerceOrder {
       }
     }
     $payment = reset($payments);
-    $paymentId = (!empty($payment->remote_id->value)) ? $payment->remote_id->value : $payment->id();
     $orderData = new \stdClass();
-    $orderData->id = $paymentId;
+    $orderData->id = $this->order->getOrderId();
     $orderData->affiliation = $store;
     $orderData->revenue = round($revenue, 2);
     $orderData->tax = round($tax, 2);
